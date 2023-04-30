@@ -4,6 +4,8 @@ import Client from "../features/client/Client";
 import { ClientDetail } from "../features/client/ClientDetail";
 import Header from "../features/common/Header";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { CarDetailById } from "../features/car/CarDetailById";
+import VisitDetail from "../features/visit/VisitDetail";
 
 function App() {
   return (
@@ -20,7 +22,9 @@ function App() {
             }
           />
           <Route path="/cars" element={<Car />} />
+          <Route path="/cars/:id_car" element={<CarDetailById />} />
           <Route path="/clients/:clientId" element={<ClientDetail />} />
+          <Route path="/visits/:id_visit" element={<VisitDetail />} />
         </Routes>
       </Router>
     </div>

@@ -26,6 +26,29 @@ export const getCars = createAsyncThunk("cars/getCars", async () => {
   return data.cars;
 });
 
+export const getCarbyId = createAsyncThunk("cars/getCarbyId", async (id) => {
+  const { data } = await client.query({
+    query: gql`
+      query State($carId: ID!) {
+        car(id: $carId) {
+          id_car
+          year
+          vin
+          plate
+          model
+          brand
+          client {
+            name
+            dpi
+          }
+        }
+      }
+    `,
+    variables: { carId: id },
+  });
+  return data.car;
+});
+
 export const createCar = createAsyncThunk("cars/createCar", async (car) => {
   const { year } = car;
   const { data } = await client.mutate({
@@ -96,6 +119,30 @@ export const carsSlice = createSlice({
       })
       .addCase(createCar.rejected, (state, action) => {
         state.status = "failed";
+        state.error = action.error.message;
+      });
+    builder
+      .addCase(deleteCar.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(deleteCar.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.data = state.data.filter((car) => car.id !== action.payload.id);
+      })
+      .addCase(deleteCar.rejected, (state, action) => {
+        state.deleteCar = "failed";
+        state.error = action.error.message;
+      });
+    builder
+      .addCase(getCarbyId.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(getCarbyId.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.data = action.payload;
+      })
+      .addCase(getCarbyId.rejected, (state, action) => {
+        state.deleteCar = "failed";
         state.error = action.error.message;
       });
   },

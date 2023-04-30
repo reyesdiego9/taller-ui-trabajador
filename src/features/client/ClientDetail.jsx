@@ -7,24 +7,21 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { getClientbyId } from "./ClientSlide";
 import { useDispatch, useSelector } from "react-redux";
-import styled from "@emotion/styled";
 import AddCarModal from "../car/ModalAddCar";
-import { Assignment, Delete, SendRounded } from "@mui/icons-material";
-
-const StyledPaper = styled(Paper)({
-  margin: "2rem auto",
-  width: "80%",
-  padding: "2rem",
-});
+import { Assignment, Delete } from "@mui/icons-material";
+import DeleteCarModal from "../car/ModalDeleteCar";
+import { StyledPaper } from "../../css/style";
 
 export const ClientDetail = () => {
   const dispatch = useDispatch();
   const { status, data = [], error } = useSelector((state) => state.clients);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [clientData, setClientData] = useState(data);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalDeleteOpen, setIsModalDeleteOpen] = useState(false);
+  const [car, setCar] = useState([]);
   const { clientId } = useParams();
 
   useEffect(() => {
@@ -45,6 +42,11 @@ export const ClientDetail = () => {
 
   const handleAddCar = () => {
     setIsModalOpen(true);
+  };
+
+  const handleDeleteCar = (car) => {
+    setCar(car);
+    setIsModalDeleteOpen(true);
   };
 
   return (
@@ -105,12 +107,15 @@ export const ClientDetail = () => {
                     variant="contained"
                     startIcon={<Delete />}
                     sx={{ marginRight: "8px" }}
+                    onClick={() => handleDeleteCar(car)}
                   >
                     Eliminar
                   </Button>
-                  <Button variant="contained" endIcon={<Assignment />}>
-                    Ver info.
-                  </Button>
+                  <Link to={`/cars/${car.id_car}`}>
+                    <Button variant="contained" endIcon={<Assignment />}>
+                      Ver info.
+                    </Button>
+                  </Link>
                 </Box>
               </Box>
             ))}
@@ -122,6 +127,12 @@ export const ClientDetail = () => {
         onClose={() => setIsModalOpen(false)}
         idClient={clientId}
         setClientData={setClientData}
+      />
+      <DeleteCarModal
+        isOpen={isModalDeleteOpen}
+        onClose={() => setIsModalDeleteOpen(false)}
+        setClientData={setClientData}
+        car={car}
       />
     </>
   );

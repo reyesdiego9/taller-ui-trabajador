@@ -35,10 +35,6 @@ const Car = () => {
   ];
 
   useEffect(() => {
-    setTableData(data);
-  }, [data]);
-
-  useEffect(() => {
     dispatch(getCars());
   }, [dispatch]);
 

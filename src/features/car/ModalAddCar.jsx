@@ -15,11 +15,10 @@ import {
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { createCar } from "./CarSlice";
-import { isEmpty, isNull } from "lodash";
 
 const AddCarModal = ({ isOpen, onClose, idClient = 0, setClientData }) => {
   const dispatch = useDispatch();
-  const { status, error } = useSelector((state) => state.cars);
+  const { error } = useSelector((state) => state.cars);
 
   const [plate, setPlate] = useState("");
   const [brand, setBrand] = useState("");
