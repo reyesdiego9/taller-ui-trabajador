@@ -8,7 +8,9 @@ import {
   Paper,
   Box,
   TableCell,
+  Button,
 } from "@mui/material";
+import { Padding } from "@mui/icons-material";
 
 const StyledTableContainer = styled(TableContainer)({
   margin: "2rem auto",
@@ -26,7 +28,14 @@ const StyledTableCell = styled(TableCell)({
 const TableCommon = ({ columns, data }) => {
   return (
     <StyledTableContainer component={Paper}>
-      <Box sx={{ overflowX: "auto", minWidth: "100%" }}>
+      <Box sx={{ overflowX: "auto", minWidth: "100%", paddingTop: "20px" }}>
+        {/* <Button
+          variant="contained"
+          color="primary"
+          sx={{ marginBottom: "15px", marginLeft: "15px" }}
+        >
+          Agregar Cliente
+        </Button> */}
         <Table>
           <StyledTableHeader>
             <TableRow>

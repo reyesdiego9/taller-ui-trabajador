@@ -11,7 +11,7 @@ import { Link, useParams } from "react-router-dom";
 import { getClientbyId } from "./ClientSlide";
 import { useDispatch, useSelector } from "react-redux";
 import AddCarModal from "../car/ModalAddCar";
-import { Assignment, Delete } from "@mui/icons-material";
+import { Assignment, Dangerous, Delete } from "@mui/icons-material";
 import DeleteCarModal from "../car/ModalDeleteCar";
 import { StyledPaper } from "../../css/style";
 
@@ -77,49 +77,68 @@ export const ClientDetail = () => {
               Agregar Vehiculo
             </Button>
           </Box>
-          <Box mt={2}>
-            {clientData?.cars?.map((car) => (
-              <Box
-                key={car.plate}
-                mb={2}
-                sx={{ borderBottom: "1px solid #e0e0e0" }}
-              >
-                <Typography variant="subtitle1" component="p">
-                  Placas: {car.plate}
-                </Typography>
-                <Typography variant="subtitle1" component="p">
-                  Modelo: {car.model}
-                </Typography>
-                <Typography variant="subtitle1" component="p">
-                  Marca: {car.brand}
-                </Typography>
-                <Typography variant="subtitle1" component="p">
-                  Año: {car.year}
-                </Typography>
-                {car?.vin && (
+          {clientData?.cars?.length === 0 ? (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "200px",
+                border: "1px solid #e0e0e0",
+                borderRadius: "4px",
+                p: 2,
+              }}
+            >
+              <Typography variant="body1" color="text.secondary">
+                No contiene ningún vehiculo.
+              </Typography>
+              <Dangerous />
+            </Box>
+          ) : (
+            <Box mt={2}>
+              {clientData?.cars?.map((car) => (
+                <Box
+                  key={car.plate}
+                  mb={2}
+                  sx={{ borderBottom: "1px solid #e0e0e0" }}
+                >
                   <Typography variant="subtitle1" component="p">
-                    Vin: {car.vin}
+                    Placas: {car.plate}
                   </Typography>
-                )}
-                <Box mt={1} mb={2}>
-                  <Button
-                    color="error"
-                    variant="contained"
-                    startIcon={<Delete />}
-                    sx={{ marginRight: "8px" }}
-                    onClick={() => handleDeleteCar(car)}
-                  >
-                    Eliminar
-                  </Button>
-                  <Link to={`/cars/${car.id_car}`}>
-                    <Button variant="contained" endIcon={<Assignment />}>
-                      Ver info.
+                  <Typography variant="subtitle1" component="p">
+                    Modelo: {car.model}
+                  </Typography>
+                  <Typography variant="subtitle1" component="p">
+                    Marca: {car.brand}
+                  </Typography>
+                  <Typography variant="subtitle1" component="p">
+                    Año: {car.year}
+                  </Typography>
+                  {car?.vin && (
+                    <Typography variant="subtitle1" component="p">
+                      Vin: {car.vin}
+                    </Typography>
+                  )}
+                  <Box mt={1} mb={2}>
+                    <Button
+                      color="error"
+                      variant="contained"
+                      startIcon={<Delete />}
+                      sx={{ marginRight: "8px" }}
+                      onClick={() => handleDeleteCar(car)}
+                    >
+                      Eliminar
                     </Button>
-                  </Link>
+                    <Link to={`/cars/${car.id_car}`}>
+                      <Button variant="contained" endIcon={<Assignment />}>
+                        Ver info.
+                      </Button>
+                    </Link>
+                  </Box>
                 </Box>
-              </Box>
-            ))}
-          </Box>
+              ))}
+            </Box>
+          )}
         </Box>
       </StyledPaper>
       <AddCarModal

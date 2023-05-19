@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getClients } from "./ClientSlide";
 import TableCommon from "../common/TableCommon";
 import { Link } from "react-router-dom";
-import { Button } from "@mui/material";
+import { Button, Container } from "@mui/material";
 
 const Client = () => {
   const dispatch = useDispatch();
@@ -65,7 +65,11 @@ const Client = () => {
     return <div>Error: {error}</div>;
   }
 
-  return <TableCommon columns={columns} data={data} />;
+  return (
+    <>
+      <TableCommon columns={columns} data={data} />
+    </>
+  );
 };
 
 export default Client;
