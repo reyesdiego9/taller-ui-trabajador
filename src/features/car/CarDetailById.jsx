@@ -17,7 +17,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { StyledPaper } from "../../css/style";
 import { getVisitbyCarId } from "../visit/visitSlice";
 import AddVisitModal from "../visit/ModalAddVisit";
-import { Dangerous } from "@mui/icons-material";
 
 export const CarDetailById = () => {
   const { status, data = [], error } = useSelector((state) => state.cars);
@@ -87,7 +86,7 @@ export const CarDetailById = () => {
           </CardContent>
           <Box>
             <CardHeader title={`Visitas del vehiculo`} />
-            <CardContent key="infoVehicleVisit">
+            <CardContent key="visitContent">
               {visits.length > 0 ? (
                 visits.map((visit, index) => (
                   <>

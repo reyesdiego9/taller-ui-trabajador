@@ -36,10 +36,7 @@ const DeleteCarModal = ({ isOpen, onClose, setClientData, car }) => {
     <Dialog open={isOpen} onClose={onClose}>
       <DialogTitle>Eliminar Vehículo</DialogTitle>
       <DialogContent>
-        <p>
-          ¿Estás seguro de que deseas eliminar el vehículo con placa {car.plate}
-          ?
-        </p>
+        ¿Estás seguro de que deseas eliminar el vehículo con placa {car.plate}?
       </DialogContent>
       <DialogActions>
         <Button disabled={isDeleting} onClick={onClose}>

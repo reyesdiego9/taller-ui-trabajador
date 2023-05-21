@@ -9,7 +9,7 @@ import VisitDetail from "../features/visit/VisitDetail";
 
 function App() {
   return (
-    <div>
+    <>
       <Router>
         <Header />
         <Routes>
@@ -27,7 +27,7 @@ function App() {
           <Route path="/visits/:id_visit" element={<VisitDetail />} />
         </Routes>
       </Router>
-    </div>
+    </>
   );
 }
 

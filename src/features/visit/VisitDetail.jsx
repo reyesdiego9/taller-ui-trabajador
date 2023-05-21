@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { getVisitbyId } from "./visitSlice";
+import { getVisitbyId, updateVisitState } from "./visitSlice";
 import { StyledPaper } from "../../css/style";
 import "./visit.css";
 import {
@@ -22,9 +22,10 @@ import {
 } from "@mui/material";
 import { Check } from "@mui/icons-material";
 import { blue, deepOrange, lightGreen, yellow } from "@mui/material/colors";
-import { serviceByVisitId } from "../services/serviceSlice";
+import { serviceByVisitId, updateServiceState } from "../services/serviceSlice";
 import AddVisitModal from "./ModalAddVisit";
 import ModalAddService from "../services/ModalAddService";
+import ButtonStage from "./components/ButtonStage/ButtonStage";
 
 const steps = ["Pendiente", "En proceso", "Finalizado"];
 
@@ -60,19 +61,20 @@ function QontoStepIcon(props) {
 const VisitDetail = () => {
   const dataVisit = useSelector((state) => state.visits.data);
   const statusVisit = useSelector((state) => state.visits.status);
-  const { data = [], error } = useSelector((state) => state.services);
+  const { data = [], error, status } = useSelector((state) => state.services);
 
   const { id_visit } = useParams();
   const dispatch = useDispatch();
   const [activeStepVisit, setactiveStepVisit] = useState(0);
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, setActiveStep] = useState();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(getVisitbyId(id_visit)).then((data) => {
       setactiveStepVisit(parseInt(data.payload.state.id_sem));
+      console.log(data.payload.token.token);
     });
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     dispatch(serviceByVisitId(id_visit)).then((data) => {
@@ -88,11 +90,11 @@ const VisitDetail = () => {
     return <div>Error: {error}</div>;
   }
 
-  if (activeStep === "loading") {
+  if (status === "loading") {
     return <div>Loading...</div>;
   }
 
-  if (activeStep === "failed") {
+  if (status === "failed") {
     return <div>Error: {error}</div>;
   }
 
@@ -104,7 +106,6 @@ const VisitDetail = () => {
     if (idState == 2) {
       return "warning";
     }
-
     if (idState == 3) {
       return "success";
     }
@@ -126,6 +127,30 @@ const VisitDetail = () => {
     setIsModalOpen(true);
   };
 
+  const handleServiceStateUpdate = (serviceId, newStateId) => {
+    dispatch(updateServiceState({ serviceId, newStateId })).then(() => {
+      dispatch(serviceByVisitId(id_visit));
+    });
+  };
+
+  const handleEndVisit = () => {
+    dispatch(updateVisitState({ id_visit }));
+    setactiveStepVisit(3);
+  };
+
+  const handleCopyURL = () => {
+    const url = `http://localhost:5174/visit/${dataVisit.token.token}`; // Reemplaza con tu URL deseada
+
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        console.log("URL copiado al portapapeles:", url);
+      })
+      .catch((error) => {
+        console.error("Error al copiar el URL:", error);
+      });
+  };
+
   return (
     <>
       <StyledPaper>
@@ -134,9 +159,6 @@ const VisitDetail = () => {
             title={`Detalles de Visita`}
             action={
               <>
-                <Button variant="contained" color="primary">
-                  Finalizar
-                </Button>
                 <Button
                   variant="contained"
                   color="secondary"
@@ -145,6 +167,24 @@ const VisitDetail = () => {
                 >
                   Agregar servicio
                 </Button>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleCopyURL}
+                  style={{ marginLeft: "16px" }}
+                >
+                  Compartir
+                </Button>
+                {dataVisit?.state?.id_sem != 3 && (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    style={{ marginLeft: "16px" }}
+                    onClick={handleEndVisit}
+                  >
+                    Finalizar
+                  </Button>
+                )}
               </>
             }
           />
@@ -164,59 +204,66 @@ const VisitDetail = () => {
         </Box>
         <Box sx={{ maxWidth: 600 }}>
           <Stepper activeStep={activeStep} orientation="vertical">
-            {data.map((service, index) => (
-              <Step key={service.description}>
-                <StepLabel>{service.description}</StepLabel>
-                <StepContent>
-                  <Paper elevation={2} sx={{ padding: 1 }}>
-                    <ListItem alignItems="flex-start">
-                      <ListItemText
-                        primary={`Estado`}
-                        secondary={
-                          <Chip
-                            label={`${service.state.name}`}
-                            color={getColorChip(service.state.id_sem)}
-                          />
-                        }
-                      />
-                    </ListItem>
-                    <ListItem alignItems="flex-start">
-                      <ListItemText
-                        primary={`Fecha de inicio`}
-                        secondary={`${new Date(
-                          Number(service.starttimestamp)
-                        ).toLocaleDateString("es-ES")}`}
-                      />
-                    </ListItem>
-                    <ListItem alignItems="flex-start">
-                      <ListItemText
-                        primary={`Fecha de fin`}
-                        secondary={
-                          service.starttimestamp !== null
-                            ? `${new Date(
-                                Number(service.endtimestamp)
-                              ).toLocaleDateString("es-ES")}`
-                            : "-"
-                        }
-                      />
-                    </ListItem>
-                    <ListItem alignItems="flex-start">
-                      <ListItemText
-                        primary={`Falla`}
-                        secondary={service.catalog_service.fault}
-                      />
-                    </ListItem>
-                    <ListItem alignItems="flex-start">
-                      <ListItemText
-                        primary={`Recargo`}
-                        secondary={`Q. ${parseFloat(
-                          service.catalog_service.charge
-                        ).toFixed(2)}`}
-                      />
-                    </ListItem>
-                    <ListItem alignItems="flex-start">
-                      <Box sx={{ mb: 2 }}>
-                        <div>
+            {data &&
+              data.map((service, index) => (
+                <Step key={service.description}>
+                  <StepLabel>{service.description}</StepLabel>
+                  <StepContent>
+                    <Paper elevation={2} sx={{ padding: 1 }}>
+                      <ListItem alignItems="flex-start">
+                        <ListItemText
+                          primary={`Estado`}
+                          secondary={
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <Chip
+                                label={`${service.state.name}`}
+                                color={getColorChip(service.state.id_sem)}
+                              />
+                              <ButtonStage
+                                serviceState={service.state.id_sem}
+                                serviceId={service.id_service}
+                                onUpdateState={handleServiceStateUpdate}
+                              />
+                            </Box>
+                          }
+                        />
+                      </ListItem>
+                      <ListItem alignItems="flex-start">
+                        <ListItemText
+                          primary={`Fecha de inicio`}
+                          secondary={`${new Date(
+                            Number(service.starttimestamp)
+                          ).toLocaleDateString("es-ES")}`}
+                        />
+                      </ListItem>
+                      <ListItem alignItems="flex-start">
+                        <ListItemText
+                          primary={`Fecha de fin`}
+                          secondary={
+                            service.endtimestamp !== null
+                              ? `${new Date(
+                                  Number(service.endtimestamp)
+                                ).toLocaleDateString("es-ES")}`
+                              : "-"
+                          }
+                        />
+                      </ListItem>
+                      <ListItem alignItems="flex-start">
+                        <ListItemText
+                          primary={`Falla`}
+                          secondary={service.catalog_service.fault}
+                        />
+                      </ListItem>
+                      <ListItem alignItems="flex-start">
+                        <ListItemText
+                          primary={`Recargo`}
+                          secondary={`Q. ${parseFloat(
+                            service.catalog_service.charge
+                          ).toFixed(2)}`}
+                        />
+                      </ListItem>
+                      <ListItem alignItems="flex-start">
+                        <Box sx={{ mb: 2 }}>
                           <Button
                             variant="contained"
                             onClick={handleNext}
@@ -231,22 +278,40 @@ const VisitDetail = () => {
                           >
                             Back
                           </Button>
-                        </div>
-                      </Box>
-                    </ListItem>
-                  </Paper>
-                </StepContent>
-              </Step>
-            ))}
+                        </Box>
+                      </ListItem>
+                    </Paper>
+                  </StepContent>
+                </Step>
+              ))}
           </Stepper>
-          {activeStep === data.length && (
+          {data.length > 0 ? (
+            activeStep === data.length && (
+              <Paper square elevation={0} sx={{ p: 3 }}>
+                <Typography>Ver Servicios</Typography>
+                <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
+                  Reiniciar
+                </Button>
+              </Paper>
+            )
+          ) : (
             <Paper square elevation={0} sx={{ p: 3 }}>
-              <Typography>
-                All steps completed - you&apos;re finished
-              </Typography>
-              <Button onClick={handleReset} sx={{ mt: 1, mr: 1 }}>
-                Reset
-              </Button>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  minHeight: "200px",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "4px",
+                  p: 2,
+                  width: "100%",
+                }}
+              >
+                <Typography variant="body1" color="text.secondary">
+                  Aun no se tienen servicios
+                </Typography>
+              </Box>
             </Paper>
           )}
         </Box>

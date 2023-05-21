@@ -43,6 +43,7 @@ export const getVisitbyId = createAsyncThunk(
       query: gql`
         query ServicesByVisitId($visitId: ID!) {
           visit(id: $visitId) {
+            id_visit
             start_date
             end_date
             state {
@@ -99,6 +100,31 @@ export const createVisitCar = createAsyncThunk(
   }
 );
 
+export const updateVisitState = createAsyncThunk(
+  "visit/updateVisitState",
+  async ({ id_visit }) => {
+    const { data } = await client.mutate({
+      mutation: gql`
+        mutation Mutation($idVisit: ID!) {
+          endVisit(id_visit: $idVisit) {
+            id_visit
+            start_date
+            end_date
+            state {
+              name
+              id_sem
+            }
+          }
+        }
+      `,
+      variables: {
+        idVisit: id_visit,
+      },
+    });
+    return data.endVisit;
+  }
+);
+
 export const visitSlice = createSlice({
   name: "visits",
   initialState,
@@ -138,6 +164,24 @@ export const visitSlice = createSlice({
         state.data.push(action.payload);
       })
       .addCase(createVisitCar.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      });
+    builder
+      .addCase(updateVisitState.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(updateVisitState.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        console.log("action.payload.id_visit", action.payload.id_visit);
+        console.log("action.payload.end_date", action.payload.end_date);
+        state.data = {
+          ...state.data,
+          state: action.payload.state,
+          end_date: action.payload.end_date,
+        };
+      })
+      .addCase(updateVisitState.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.error.message;
       });
